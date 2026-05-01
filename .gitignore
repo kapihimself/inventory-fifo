@@ -1,0 +1,47 @@
+# --- Dependencies ---
+node_modules/
+.pnp
+.pnp.js
+
+# --- Build output ---
+.next/
+out/
+dist/
+build/
+
+# --- Secrets (NEVER commit these) ---
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# --- Prisma ---
+# keep schema.prisma committed, ignore generated client if vendored
+# prisma/migrations/ should be committed for production tracking
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# --- Editor ---
+.vscode/settings.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# --- Logs ---
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# --- Misc ---
+laporan.pdf
+tmp_app/
+tsconfig.tsbuildinfo
+next-env.d.ts

@@ -1,0 +1,172 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Branch {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  location  String?
+  users     User[]
+  requests  Request[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  role      Role     @default(KARYAWAN_UMUM)
+  branchId  String?
+  branch    Branch?  @relation(fields: [branchId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum Role {
+  ADMIN_PUSAT
+  STAFF_LOGISTIK
+  MANAGER
+  KARYAWAN_UMUM
+}
+
+model Category {
+  id    String @id @default(cuid())
+  name  String @unique // ATK, Form
+  items Item[]
+}
+
+model Item {
+  id          String       @id @default(cuid())
+  name        String       @unique
+  categoryId  String
+  category    Category     @relation(fields: [categoryId], references: [id])
+  minStock    Int          @default(0)
+  unit        String       @default("Pcs")
+  stockBatches StockBatch[]
+  requestItems RequestItem[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model StockBatch {
+  id              String             @id @default(cuid())
+  itemId          String
+  item            Item               @relation(fields: [itemId], references: [id])
+  initialQuantity Int
+  currentQuantity Int
+  price           Decimal?
+  receivedDate    DateTime           @default(now())
+  distributionItems DistributionItem[]
+}
+
+model Request {
+  id              String         @id @default(cuid())
+  branchId        String
+  branch          Branch         @relation(fields: [branchId], references: [id])
+  status          RequestStatus  @default(PENDING)
+  nomorPermintaan String?        @unique
+  items           RequestItem[]
+  distributions   Distribution[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model RequestItem {
+  id                String             @id @default(cuid())
+  requestId         String
+  request           Request            @relation(fields: [requestId], references: [id])
+  itemId            String
+  item              Item               @relation(fields: [itemId], references: [id])
+  quantityRequested Int
+  quantityFulfilled Int                @default(0)
+  distributionItems DistributionItem[]
+}
+
+model Distribution {
+  id               String             @id @default(cuid())
+  requestId        String
+  request          Request            @relation(fields: [requestId], references: [id])
+  suratJalanNumber String             @unique
+  status           DistributionStatus @default(SHIPPED)
+  items            DistributionItem[]
+  receipt          Receipt?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+}
+
+model DistributionItem {
+  id             String       @id @default(cuid())
+  distributionId String
+  distribution   Distribution @relation(fields: [distributionId], references: [id])
+  stockBatchId   String
+  stockBatch     StockBatch   @relation(fields: [stockBatchId], references: [id])
+  requestItemId  String
+  requestItem    RequestItem  @relation(fields: [requestItemId], references: [id])
+  quantity       Int
+}
+
+model Receipt {
+  id             String       @id @default(cuid())
+  distributionId String       @unique
+  distribution   Distribution @relation(fields: [distributionId], references: [id])
+  receivedBy     String
+  receivedAt     DateTime     @default(now())
+  notes          String?
+}
+
+enum RequestStatus {
+  PENDING
+  PARTIAL
+  COMPLETED
+  CANCELLED
+}
+
+enum DistributionStatus {
+  SHIPPED
+  DELIVERED
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String   // e.g., "DISTRIBUTE", "RECEIVE", "RESTOCK"
+  entity    String   // e.g., "Distribution", "StockBatch"
+  entityId  String
+  oldData   Json?
+  newData   Json?
+  createdAt DateTime @default(now())
+}
+
+model ClosingPeriod {
+  id        String    @id @default(cuid())
+  year      Int
+  month     Int
+  isClosed  Boolean   @default(false)
+  closedAt  DateTime?
+  closedBy  String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@unique([year, month])
+}
+
+model Procurement {
+  id             String   @id @default(cuid())
+  nomorPengadaan String   @unique
+  vendor         String
+  items          Json
+  includePPN     Boolean  @default(false)
+  keterangan     String?
+  suratIzinUrl   String?
+  createdBy      String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
