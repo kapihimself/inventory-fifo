@@ -23,7 +23,7 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   // Crash the build if any page has a type error — catches issues before deploy
   typescript: { ignoreBuildErrors: false },
-  eslint: { ignoreDuringBuilds: false },
+
 
   async headers() {
     return [
