@@ -211,7 +211,7 @@ export default function ReportsPage() {
                 </select>
               </div>
               <button
-                onClick={fetchAll}
+                onClick={() => fetchAll()}
                 disabled={loading}
                 className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-xl text-sm font-medium hover:bg-gray-50 transition-all disabled:opacity-50"
               >
